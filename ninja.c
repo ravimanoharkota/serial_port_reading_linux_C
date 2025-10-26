@@ -1,5 +1,10 @@
-// C library headers
+
+// References :
+
+// https://www.man7.org/linux/man-pages/man2/poll.2.html
 // https://blog.mbedded.ninja/programming/operating-systems/linux/linux-serial-ports-using-c-cpp/
+// https://thelinuxcode.com/use-poll-system-call-c/
+
 #include <stdio.h>
 #include <string.h>
 
@@ -18,6 +23,9 @@
 
 #define POLL_TIMEOUT 2000
 #define BUFF_SIZE 512
+
+#define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); \
+                               } while (0)
 
 /**
  * @struct Serial device structure.
@@ -82,9 +90,10 @@ int main(int argc, const char *argv[]) {
   
   int poll_res;	
   struct pollfd ufds;
-
+  static no_data;
   struct serial_s *sport = serial_create();
 
+  
   // Open the serial port. Change device path as needed (currently set to an standard FTDI USB-UART cable type device)
   int serial_port = open(argv[1], O_RDWR); //to change to sport->fd
   printf("oooopening %s", argv[1]);
@@ -166,9 +175,20 @@ printf("set tty settings");
   printf("start reading...");
 
   while (1) {
+	  
           poll_res = poll(&ufds, 1, POLL_TIMEOUT);
-	  if ( poll_res > 0 ) {
-		  //  //Fetch the data.
+	      if (poll_res <= 0) {
+			/* Poll failed, close serial and exit program with failure */
+		     close(serial_port);
+	         errExit("poll"); // poll() failed"
+	      }
+	  
+	      /* If poll() returned SUCESS, then we check the ufds return event flags to
+		     * confirm a return DATA IN result,
+	       * and proceed to read the i/g data to be processed
+		   */
+	  if ( ufds.revents & POLLIN ) {
+	
 	    num_bytes = read(serial_port, &read_buf, sizeof(read_buf));
 	    if( num_bytes > 0 ) {
 	      //printf("Read %i bytes. Received message: %s", num_bytes, read_buf);
@@ -181,9 +201,7 @@ printf("set tty settings");
 	      printf("read failed");
 
         }//poll_res > 0
-	else {
-		printf("polll error");
-	}
+
   }//while	
 
   // n is the number of bytes read. n may be 0 if no bytes were received, and can also be -1 to signal an error.
