@@ -24,5 +24,6 @@ Tested successfully on my Ubuntu 22.04 LTS linux laptop and result PASS.
 
 Future Work:
 1. Code cleanup and refactoring
-2. Upgrade writer thread to Send data over network and have DB recording at remote server
+2. Add Makefile and environmental settings.
+3. Upgrade writer thread to Send data over network and have DB recording at remote server
    ( Wireless storage implementation )
