@@ -1,0 +1,173 @@
+
+test1:
+********************************************************************************************************
+Deque more than Enque-
+ENQUE 5 pkts, DEQUEU 20pkts, RING_BUFFER_SIZE 10
+
+Expected Result:
+----------------
+We should NOT Dequeu more than we enqueued
+
+Actual Result:
+--------------
+same
+
+Status:
+------
+PASS
+
+ravi@hpPavilion:~/rtes$ gcc ringbuf.c ringbuf.h
+ravi@hpPavilion:~/rtes$ ./a.out 
+enqueued pktid:1 of len:50 bytes
+enqueued pktid:2 of len:50 bytes
+enqueued pktid:3 of len:50 bytes
+enqueued pktid:4 of len:50 bytes
+enqueued pktid:5 of len:50 bytes
+dequeued pktid:1 of len:50 bytes
+dequeued pktid:2 of len:50 bytes
+dequeued pktid:3 of len:50 bytes
+dequeued pktid:4 of len:50 bytes
+dequeued pktid:5 of len:50 bytes
+deque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORdeque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORdeque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORdeque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORdeque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORdeque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORdeque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORdeque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORdeque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORdeque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORdeque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORdeque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORdeque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORdeque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORdeque(): ERROR - cant dequeue from already emptied slot !!
+DEQUE ERRORravi@hpPavilion:~/rtes$ 
+
+
+test2:
+*********************************************************************
+ENQ > DEQ
+enqueue 7 pkts, dequeue 3 pkts
+
+Expected Result:
+----------------
+No Errors expected
+
+
+Actual REsult:
+--------------
+No Errors
+
+ravi@hpPavilion:~/rtes$ ./a.out 
+enqueued pktid:1 of len:50 bytes
+enqueued pktid:2 of len:50 bytes
+enqueued pktid:3 of len:50 bytes
+enqueued pktid:4 of len:50 bytes
+enqueued pktid:5 of len:50 bytes
+enqueued pktid:6 of len:50 bytes
+enqueued pktid:7 of len:50 bytes
+dequeued pktid:1 of len:50 bytes
+dequeued pktid:2 of len:50 bytes
+dequeued pktid:3 of len:50 bytes
+ravi@hpPavilion:~/rtes$ 
+
+test3:
+*********************************************************************
+ENQ > DEQ, ENQ > RING_BUFFER_SIZE
+enqueue 20 pkts, dequeue 5 pkts
+
+Expected Result:
+----------------
+1st 10 packets to be overwritten
+
+
+Actual REsult:
+ravi@hpPavilion:~/rtes$ ./a.out 
+enqueued pktid:1 of len:50 bytes
+enqueued pktid:2 of len:50 bytes
+enqueued pktid:3 of len:50 bytes
+enqueued pktid:4 of len:50 bytes
+enqueued pktid:5 of len:50 bytes
+enqueued pktid:6 of len:50 bytes
+enqueued pktid:7 of len:50 bytes
+enqueued pktid:8 of len:50 bytes
+enqueued pktid:9 of len:50 bytes
+enqueued pktid:10 of len:50 bytes
+enqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORdequeued pktid:1 of len:50 bytes
+dequeued pktid:2 of len:50 bytes
+dequeued pktid:3 of len:50 bytes
+dequeued pktid:4 of len:50 bytes
+dequeued pktid:5 of len:50 bytes
+ravi@hpPavilion:~/rtes$ 
+
+
+ENQ20, DEQ 5, then ENQ4
+=======================
+
+Expected:
+=========
+it enqueues max 10, then gives errors for next 10 as queue full, but next deques 5, makes 
+next 4 enque successfully.
+Actual Result:
+==============
+same as expected.
+
+Observation:
+------------
+Further, it is observed that during the Queue full time, that is all while Enq erroring out,
+we see packet drops (ENQ error, cant enque messages indicate dropped packtes). 
+But when Dequeue runs, it makes space for more packets and new packets from pktid:21 keep
+getting enqueued again.
+
+Inference:
+----------
+The Dequeue rate should be as fast as enqueue rate for
+accuartely reciving all data, i.e for NO or MINIMAL packet drops
+
+ravi@hpPavilion:~/rtes$ ./a.out 
+enqueued pktid:1 of len:50 bytes
+enqueued pktid:2 of len:50 bytes
+enqueued pktid:3 of len:50 bytes
+enqueued pktid:4 of len:50 bytes
+enqueued pktid:5 of len:50 bytes
+enqueued pktid:6 of len:50 bytes
+enqueued pktid:7 of len:50 bytes
+enqueued pktid:8 of len:50 bytes
+enqueued pktid:9 of len:50 bytes
+enqueued pktid:10 of len:50 bytes
+enqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORenqueue(): ERROR - cant enqueue to already enqueued slot !!
+ENQUE ERRORdequeued pktid:1 of len:50 bytes
+dequeued pktid:2 of len:50 bytes
+dequeued pktid:3 of len:50 bytes
+dequeued pktid:4 of len:50 bytes
+dequeued pktid:5 of len:50 bytes
+enqueued pktid:21 of len:50 bytes
+enqueued pktid:22 of len:50 bytes
+enqueued pktid:23 of len:50 bytes
+enqueued pktid:24 of len:50 bytes
+ravi@hpPavilion:~/rtes$ 
+
+
+
+
